@@ -1010,7 +1010,7 @@ function taskRow(t, overdueStyle){
   row.appendChild(check); row.appendChild(main);
   return row;
 }
-function tagHtml(t){ return t.kind==='rotina' ? '<span class="tag tag-rotina">Rotina</span>' : '<span class="tag tag-tarefa">Tarefa</span>'; }
+function tagHtml(t){ return t.kind==='rotina' ? '<span class="tag tag-rotina">🔁 Rotina</span>' : '<span class="tag tag-tarefa">✅ Tarefa</span>'; }
 function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
 function renderInicioPanel(){
