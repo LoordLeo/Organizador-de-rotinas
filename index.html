@@ -581,7 +581,7 @@ select.reassign-select{width:100%;padding:9px 10px;border-radius:var(--radius-sm
     <!-- GERENCIADOR -->
     <section class="screen" id="screen-gerenciador">
       <div class="topbar">
-        <div><h1>Gerenciador</h1><div class="sub">Cadastre e edite tarefas e rotinas do time</div></div>
+        <div><h1>Gerenciador</h1><div class="sub">Cadastre e edite suas tarefas e rotinas — para ver as do time, acesse o Quadro do Time</div></div>
       </div>
       <div class="screen-main" style="width:100%;">
         <div class="tabs">
@@ -1223,10 +1223,10 @@ document.querySelectorAll('.tab-btn').forEach(function(b){
 });
 
 function renderGerenciador(){
-  var tarefas = state.tasks.filter(function(t){ return t.kind==='tarefa'; });
-  var rotinas = state.tasks.filter(function(t){ return t.kind==='rotina'; });
-  document.getElementById('tarefas-count').textContent = tarefas.length+' tarefa(s) cadastrada(s)';
-  document.getElementById('rotinas-count').textContent = rotinas.length+' rotina(s) cadastrada(s)';
+  var tarefas = state.tasks.filter(function(t){ return t.kind==='tarefa' && t.responsavel===state.currentUserId; });
+  var rotinas = state.tasks.filter(function(t){ return t.kind==='rotina' && t.responsavel===state.currentUserId; });
+  document.getElementById('tarefas-count').textContent = tarefas.length+' tarefa(s) sua(s) cadastrada(s)';
+  document.getElementById('rotinas-count').textContent = rotinas.length+' rotina(s) sua(s) cadastrada(s)';
 
   var listT = document.getElementById('lista-tarefas'); listT.innerHTML = '';
   tarefas.forEach(function(t){ listT.appendChild(mgrItem(t)); });
