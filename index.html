@@ -806,9 +806,32 @@ function load(){
   }catch(e){}
   return seed();
 }
+var applyingRemoteUpdate = false;
 function save(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  if(!applyingRemoteUpdate && window.__fbSync){
+    window.__fbSync.push({tasks:state.tasks, events:state.events, statusMessages:state.statusMessages});
+  }
 }
+
+/* ================= SHARED SYNC (Firebase) ================= */
+function handleRemoteUpdate(data){
+  if(data){
+    applyingRemoteUpdate = true;
+    state.tasks = data.tasks || [];
+    state.events = data.events || [];
+    state.statusMessages = data.statusMessages || {};
+    save();
+    renderAll();
+    applyingRemoteUpdate = false;
+  } else if(window.__fbSync){
+    window.__fbSync.push({tasks:state.tasks, events:state.events, statusMessages:state.statusMessages});
+  }
+}
+(function waitForFirebaseSync(){
+  if(window.__fbSync){ window.__fbSync.subscribe(handleRemoteUpdate); }
+  else { setTimeout(waitForFirebaseSync, 50); }
+})();
 
 function taskById(id){ for(var i=0;i<state.tasks.length;i++){ if(state.tasks[i].id===id) return state.tasks[i]; } return null; }
 function isOverdue(t){ return t.status!=='concluida' && parseISO(t.prazo) < TODAY; }
@@ -1541,4 +1564,34 @@ function renderAll(){
 })();
 
 })();
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  var firebaseConfig = {
+    apiKey: "AIzaSyAWbxdlxb6T60OkoD5cAomXGYgb3EXRQjQ",
+    authDomain: "organizador-de-rotinas-60f54.firebaseapp.com",
+    projectId: "organizador-de-rotinas-60f54",
+    storageBucket: "organizador-de-rotinas-60f54.firebasestorage.app",
+    messagingSenderId: "458970649870",
+    appId: "1:458970649870:web:b551163fe895ef9dc8735f"
+  };
+
+  var app = initializeApp(firebaseConfig);
+  var db = getFirestore(app);
+  var stateRef = doc(db, "dp_organizador_rotinas", "state");
+
+  var subscriber = null;
+  onSnapshot(stateRef, function(snap){
+    if(subscriber){ subscriber(snap.exists() ? snap.data() : null); }
+  }, function(err){ console.error("Firebase sync error:", err); });
+
+  window.__fbSync = {
+    push: function(data){
+      setDoc(stateRef, data, { merge: true }).catch(function(err){ console.error("Firebase push error:", err); });
+    },
+    subscribe: function(cb){ subscriber = cb; }
+  };
 </script>
